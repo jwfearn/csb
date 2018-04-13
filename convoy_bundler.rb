@@ -24,7 +24,7 @@ class ConvoyBundler
   end
 
   def bundles
-    (@bundles_from.all + @bundles_to.all + @completes).uniq.map(&:describe)
+    ((@bundles_from.all + @bundles_to.all).uniq + @completes).map(&:describe)
   end
 
   private
@@ -36,19 +36,14 @@ class ConvoyBundler
   def add_shipment(line)
     shipment = Shipment.make(line)
 
-    # puts "\n#{line}"
-
     bundle_before = @bundles_to.pop(shipment.src)
-    # puts "bundle_before: #{bundle_before.inspect}"
     @bundles_from.delete(bundle_before)
 
     bundle_after = @bundles_from.pop(shipment.dst)
-    # puts " bundle_after: #{bundle_after.inspect}"
     @bundles_to.delete(bundle_after)
 
     bundle = bundle_before&.append(shipment) || Bundle.new(shipment)
     bundle.concat(bundle_after) if bundle_after
-    # puts "       bundle: #{bundle.inspect}"
 
     if bundle.complete?
       @completes << bundle
@@ -56,14 +51,11 @@ class ConvoyBundler
       @bundles_from.push(bundle)
       @bundles_to.push(bundle)
     end
-
-    # puts "   bundles_to: #{@bundles_to.inspect}"
-    # puts " bundles_from: #{@bundles_from.inspect}"
   end
 
   private
 
-  class Loc
+  class Loc # Day-city pair suitable for use as a Hash key
     DAY_NUMS = %w[M T W R F].each_with_index.to_h.freeze
     DAY_STRS = DAY_NUMS.invert.freeze
 
@@ -100,10 +92,6 @@ class ConvoyBundler
       key.hash
     end
 
-    def inspect
-      "#{self.class.day_str(day)}/#{city}"
-    end
-
     def key
       [day, city]
     end
@@ -125,10 +113,6 @@ class ConvoyBundler
 
     def connects_from
       src.connects_from
-    end
-
-    def inspect
-      "#{id}"
     end
 
     def self.make(line)
@@ -159,7 +143,6 @@ class ConvoyBundler
 
     def initialize(shipment)
       @shipments = [shipment] # Array<Shipment>
-      # puts "   new Bundle: #{inspect}"
     end
 
     def append(shipment)
@@ -179,36 +162,26 @@ class ConvoyBundler
       @shipments.last.connects_to
     end
 
-    def describe
-      @shipments.map(&:id).join(' ')
-    end
-
-    def multi?
-      @shipments.length > 1
-    end
-
     def complete?
       connects_from.nil? && connects_to.nil?
     end
 
-    def inspect
-      describe
+    def describe
+      @shipments.map(&:id).join(' ')
     end
   end
 
   class Bundles
     def initialize
-      @bundles = {}
+      @bundles = {} # key: Location, value: Array<Bundle>
     end
 
     def push(bundle)
       loc = connection(bundle)
       if (loc)
-        # puts "push: loc: #{loc.inspect}, bundle: #{bundle.inspect}"
         @bundles[loc] ||= []
         @bundles[loc].push(bundle)
       end
-      self
     end
 
     def delete(bundle)
@@ -217,13 +190,7 @@ class ConvoyBundler
     end
 
     def pop(loc)
-      bundles = @bundles[loc]
-      # puts "pop: loc: #{loc.inspect}, bundles: #{bundles.inspect}"
-      bundles&.pop
-    end
-
-    def inspect
-      @bundles.inspect
+      @bundles[loc]&.pop
     end
 
     def all
