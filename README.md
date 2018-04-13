@@ -124,3 +124,13 @@ Please make sure you include all of the following in your submission:
 2.  Very specific instructions on how to build and run your program from a
     command line.
 3.  Any additional tests you've created
+
+To run unit tests:
+```sh
+bundle exec rspec
+```
+
+To run acceptance tests:
+```sh
+node validate.js './main' tests/*
+```
