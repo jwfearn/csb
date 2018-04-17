@@ -125,12 +125,13 @@ Please make sure you include all of the following in your submission:
     command line.
 3.  Any additional tests you've created
 
-To run unit tests:
-```sh
-bundle exec rspec
-```
+## My Submission
 
-To run acceptance tests:
-```sh
-node validate.js './main' tests/*
-```
+1. [Program source code](https://github.com/jwfearn/csb/blob/master/convoy_bundler.rb)
+2. To build and run tests, install
+   [Docker CE](https://www.docker.com/community-edition#/download),
+   then, in your shell:
+   ```sh
+   docker run -it jwfearn/csb
+   ```
+3. [Additional tests](https://github.com/jwfearn/csb/blob/master/spec/convoy_bundler_spec.rb)

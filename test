@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+echo 'Running unit tests...'
+bundle exec rspec
+echo 'Running acceptance tests...'
+node validate.js ./main tests/*
